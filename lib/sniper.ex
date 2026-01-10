@@ -9,10 +9,10 @@ defmodule Sniper do
   ## Examples
 
       iex> Sniper.hello()
-      :world
+      :ok
 
   """
   def hello do
-    :world
+    :ok
   end
 end
