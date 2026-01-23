@@ -18,19 +18,6 @@ defmodule Sniper.Application do
     opts = [strategy: :one_for_one, name: Sniper.Supervisor]
     result = Supervisor.start_link(children, opts)
 
-    if Mix.env() != :test do
-      run_demo()
-    end
-
     result
-  end
-
-  defp run_demo do
-    Process.sleep(100)
-    response1 = Sniper.PythonBridge.send_message(%{type: "hello", count: 1})
-    IO.puts("Received: #{Jason.encode!(response1)}")
-
-    response2 = Sniper.PythonBridge.send_message(%{type: "hello", count: 2})
-    IO.puts("Received: #{Jason.encode!(response2)}")
   end
 end
