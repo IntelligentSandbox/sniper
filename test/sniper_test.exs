@@ -2,7 +2,7 @@ defmodule SniperTest do
   use ExUnit.Case
   doctest Sniper
 
-  test "checks ok" do
-    assert Sniper.hello() == :ok
+  test "health check returns ok" do
+    assert Sniper.health_check() == :ok
   end
 end
