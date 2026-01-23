@@ -1,24 +1,32 @@
 import sys
 import json
 
-# This receives all the messages from Elixir. 
-# It's going to import all the other Python modules (LangChain, ChromaDB, etc)
-# When we're going for scaling we are going to use elixir workers 
-# All send request to the same bridge but the bridge.py routes the right function based on the type field. No multiple Python processes.
+# Python bridge router for Sniper
+# Routes messages from Elixir to appropriate Python modules
 
 def handle_msg(msg):
+    """
+    Route messages based on type field.
+
+    Required fields:
+    - "type": Message type for routing
+    - "_id": Request correlation ID (added automatically by Elixir)
+    """
     type = msg.get("type")
 
-    if type == "hello":
-        count = msg.get("count", 0)
-        return {"response": f"hello from python {count}", "status": "ok"}
-
+    if type == "example":
+        return {"status": "ok"}
     else:
         return {"error": f"Unknown message type: {type}", "status": "error"}
 
 for line in sys.stdin:
-    msg = json.loads(line)
-    response = handle_msg(msg)
-    response["_id"] = msg.get("_id")
-    print(json.dumps(response))
-    sys.stdout.flush()
+    try:
+        msg = json.loads(line)
+        response = handle_msg(msg)
+        response["_id"] = msg.get("_id")
+        print(json.dumps(response))
+        sys.stdout.flush()
+    except json.JSONDecodeError as e:
+        error_response = {"error": f"JSON decode error: {e}", "status": "error"}
+        print(json.dumps(error_response))
+        sys.stdout.flush()
