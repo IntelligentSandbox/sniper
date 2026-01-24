@@ -1,18 +1,33 @@
 defmodule Sniper.PythonBridge do
-  use GenServer
+  @moduledoc """
+  Python bridge for IPC communication.
 
+  Handles communication between Elixir and Python processes
+  using JSON messages over stdin/stdout.
+  """
+
+  use GenServer
+  require Logger
+
+  @doc """
+  Starts the Python bridge GenServer.
+  """
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
   @impl true
   def init(_) do
-    project_root = File.cwd!()
-    python_path = Path.join([project_root, "python", "bridge.py"])
-    venv_python = Path.join([project_root, "python", ".venv", "bin", "python3"])
-    port = Port.open({:spawn, "#{venv_python} #{python_path}"}, [:binary, :exit_status])
-    # Port spawns external Python process for IPC
-    {:ok, %{port: port, callers: %{}, buffer: "", id_counter: 0}}
+    python_path = Path.join([File.cwd!(), "python", "bridge.py"])
+
+    case File.exists?(python_path) do
+      true ->
+        port = Port.open({:spawn, "python3 #{python_path}"}, [:binary, :exit_status])
+        {:ok, %{port: port, callers: %{}, buffer: "", id_counter: 0}}
+
+      false ->
+        {:stop, "Python bridge file not found: #{python_path}"}
+    end
   end
 
   @impl true
@@ -47,8 +62,29 @@ defmodule Sniper.PythonBridge do
     {:stop, :normal, state}
   end
 
+  @doc """
+  Send a message to the Python bridge.
+
+  ## Parameters
+  - message: Map containing the message to send
+
+  ## Returns
+  - {:ok, response} on success
+  - response on success (for backward compatibility)
+
+  ## Examples
+      Sniper.PythonBridge.send_message(%{type: "hello", count: 1})
+  """
   def send_message(message) do
-    GenServer.call(__MODULE__, {:send, message}, 5000)
+    try do
+      GenServer.call(__MODULE__, {:send, message}, 5000)
+    catch
+      :exit, {:noproc, _} ->
+        {:error, "Python bridge not running"}
+
+      :exit, {:timeout, _} ->
+        {:error, "Python bridge timeout"}
+    end
   end
 
   defp split_lines(data) do
@@ -65,11 +101,14 @@ defmodule Sniper.PythonBridge do
       {:ok, response} ->
         case Map.get(response, "_id") do
           nil ->
+            # Log untagged responses for debugging
+            Logger.debug("Received response without _id: #{inspect(response)}")
             state
 
           id ->
             case Map.get(state.callers, id) do
               nil ->
+                Logger.warning("Received response for unknown request id: #{id}")
                 state
 
               from ->
@@ -79,7 +118,8 @@ defmodule Sniper.PythonBridge do
             end
         end
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error("Failed to decode JSON response: #{reason}, line: #{line}")
         state
     end
   end
