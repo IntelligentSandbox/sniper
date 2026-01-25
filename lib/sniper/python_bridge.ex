@@ -18,11 +18,25 @@ defmodule Sniper.PythonBridge do
 
   @impl true
   def init(_) do
-    python_path = Path.join([File.cwd!(), "python", "bridge.py"])
+    project_root = File.cwd!()
+    pythonbridge_dir = Path.join([project_root, "pythonbridge"])
+    python_path = Path.join([pythonbridge_dir, "bridge.py"])
 
     case File.exists?(python_path) do
       true ->
-        port = Port.open({:spawn, "python3 #{python_path}"}, [:binary, :exit_status])
+        port =
+          Port.open(
+            {:spawn_executable, System.find_executable("sh")},
+            [
+              :binary,
+              :exit_status,
+              args: [
+                "-c",
+                "PYTHONPATH=#{project_root} uv run --directory #{pythonbridge_dir} python -m pythonbridge.bridge"
+              ]
+            ]
+          )
+
         {:ok, %{port: port, callers: %{}, buffer: "", id_counter: 0}}
 
       false ->
