@@ -18,6 +18,7 @@ run:
 
 test:
 	$(MIX) test
+	cd pythonbridge && PYTHONPATH=$(PWD) $(UV) run python -m unittest discover -s tests -v
 
 format:
 	$(MIX) format
