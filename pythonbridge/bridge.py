@@ -1,8 +1,10 @@
 import sys
 import json
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel
+
+from pythonbridge.main import main
 
 # This receives all the messages from Elixir.
 # It's going to import all the other Python modules (LangChain, ChromaDB, etc)
@@ -16,8 +18,8 @@ class BridgeResponse(BaseModel):
     """
 
     status: str
-    response: Optional[str]
-    error: Optional[str]
+    response: Optional[Any] = None  # can be any json type
+    error: Optional[str] = None
 
 
 def handle_msg(msg: dict) -> BridgeResponse:
@@ -37,13 +39,25 @@ def handle_msg(msg: dict) -> BridgeResponse:
         count = msg.get("count", 0)
         return BridgeResponse(status="ok", response=f"hello from python {count}")
 
+    elif type == "main":
+        payload = msg.get("payload")
+        if not payload:
+            return BridgeResponse(status="error", error="Missing payload")
+        try:
+            reviews = main(payload)
+            return BridgeResponse(status="ok", response=reviews)
+        except Exception as e:
+            return BridgeResponse(status="error", error=str(e))
+
     else:
         return BridgeResponse(status="error", error=f"Unknown message type: {type}")
 
 
-for line in sys.stdin:
-    msg = json.loads(line)
-    response = handle_msg(msg)
-    response["_id"] = msg.get("_id")
-    print(json.dumps(response))
-    sys.stdout.flush()
+# Do not run this file directly, it's only used by Elixir
+if __name__ == "__main__":
+    for line in sys.stdin:
+        msg = json.loads(line)
+        response = handle_msg(msg).model_dump()
+        response["_id"] = msg.get("_id")
+        print(json.dumps(response))
+        sys.stdout.flush()
