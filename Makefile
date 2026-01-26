@@ -1,7 +1,7 @@
 UV = uv
 MIX = mix
 
-.PHONY: all install install-elixir install-python run test lint validate clean
+.PHONY: all install install-elixir install-python run run-python test lint validate clean
 
 all: install
 
@@ -15,6 +15,10 @@ install-python:
 
 run:
 	$(MIX) run
+
+# TODO: Temporary until Elixir webhook server is set up
+run-python:
+	cd pythonbridge && PYTHONPATH=$(PWD) $(UV) run python -m pythonbridge.main
 
 test:
 	$(MIX) test
