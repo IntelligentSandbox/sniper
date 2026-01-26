@@ -1,0 +1,9 @@
+diff --git a/pythonbridge/tests/hello.py b/pythonbridge/tests/hello.py
+new file mode 100644
+index 0000000..d0064be
+--- /dev/null
++++ b/pythonbridge/tests/hello.py
+@@ -0,0 +1,2 @@
++def hello():
++    print('world')
+\ No newline at end of file

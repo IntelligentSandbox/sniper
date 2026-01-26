@@ -1,3 +1,5 @@
+from __future__ import annotations  # issues with type hints
+
 from github import Github, PaginatedList, File
 from pythonbridge.git_utils import get_installation_token
 
