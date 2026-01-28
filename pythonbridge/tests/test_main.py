@@ -10,7 +10,10 @@ class TestMain(unittest.TestCase):
     @patch("pythonbridge.main.load_environment")
     @patch("pythonbridge.main.get_diff")
     @patch("pythonbridge.main.GroqLLM")
-    def test_main_reviews_files(self, mock_llm_class, mock_get_diff, mock_load_env):
+    @patch("pythonbridge.main.post_review")
+    def test_main_reviews_files(
+        self, mock_post_review, mock_llm_class, mock_get_diff, mock_load_env
+    ):
         # https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files
         mock_file = Mock()
         mock_file.filename = "pythonbridge/tests/hello.py"
@@ -45,8 +48,9 @@ class TestMain(unittest.TestCase):
     @patch("pythonbridge.main.load_environment")
     @patch("pythonbridge.main.get_diff")
     @patch("pythonbridge.main.GroqLLM")
+    @patch("pythonbridge.main.post_review")
     def test_main_skips_files_without_patch(
-        self, mock_llm_class, mock_get_diff, mock_load_env
+        self, mock_post_review, mock_llm_class, mock_get_diff, mock_load_env
     ):
         # Deleted files have no patch (no diff to review)
         mock_file = Mock()

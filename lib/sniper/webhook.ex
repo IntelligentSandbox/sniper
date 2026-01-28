@@ -2,9 +2,9 @@ defmodule Sniper.Webhook do
   use Plug.Router
   require Logger
 
-  plug Plug.Logger
-  plug :match
-  plug :dispatch
+  plug(Plug.Logger)
+  plug(:match)
+  plug(:dispatch)
 
   post "/webhook" do
     {:ok, body, conn} = Plug.Conn.read_body(conn)
@@ -16,6 +16,7 @@ defmodule Sniper.Webhook do
 
         if action in ["opened", "synchronize", "reopened"] do
           Logger.info("Processing PR review...")
+
           Task.start(fn ->
             result = Sniper.send_message(%{type: "main", payload: payload})
             Logger.info("Review result: #{inspect(result)}")

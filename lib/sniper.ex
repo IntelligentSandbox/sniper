@@ -5,7 +5,6 @@ defmodule Sniper do
   Main API for interacting with the Sniper system.
   """
 
-
   @doc """
   Send a message to the Python bridge for processing.
 
