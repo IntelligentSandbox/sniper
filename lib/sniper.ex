@@ -5,8 +5,6 @@ defmodule Sniper do
   Main API for interacting with the Sniper system.
   """
 
-  # TODO: Add HTTP endpoint (Phoenix/Plug) to receive GitHub webhook
-  # TODO: Webhook handler calls send_message(%{type: "main", payload: payload})
 
   @doc """
   Send a message to the Python bridge for processing.
