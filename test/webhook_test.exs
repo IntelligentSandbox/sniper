@@ -23,8 +23,8 @@ defmodule Sniper.WebhookTest do
   describe "signature validation" do
     setup do
       # Set a test secret for these tests
-      System.put_env("GITHUB_WEBHOOK_SECRET", "test_secret")
-      on_exit(fn -> System.delete_env("GITHUB_WEBHOOK_SECRET") end)
+      Application.put_env(:sniper, :github_webhook_secret, "test_secret")
+      on_exit(fn -> Application.delete_env(:sniper, :github_webhook_secret) end)
       :ok
     end
 
@@ -69,7 +69,7 @@ defmodule Sniper.WebhookTest do
   describe "no secret configured" do
     setup do
       # Ensure no secret is set
-      System.delete_env("GITHUB_WEBHOOK_SECRET")
+      Application.delete_env(:sniper, :github_webhook_secret)
       :ok
     end
 
@@ -90,7 +90,7 @@ defmodule Sniper.WebhookTest do
   describe "request handling" do
     setup do
       # Skip signature validation for these tests
-      System.delete_env("GITHUB_WEBHOOK_SECRET")
+      Application.delete_env(:sniper, :github_webhook_secret)
       :ok
     end
 

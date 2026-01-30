@@ -25,7 +25,7 @@ defmodule Sniper.Webhook do
 
   # Validates GitHub webhook signature using HMAC-SHA256
   defp validate_signature(conn, body) do
-    secret = System.get_env("GITHUB_WEBHOOK_SECRET")
+    secret = Application.get_env(:sniper, :github_webhook_secret)
 
     # Skip validation if no secret configured (development mode)
     if is_nil(secret) or secret == "" do
