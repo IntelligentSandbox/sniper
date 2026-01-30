@@ -20,7 +20,4 @@
 
   <!-- Robot mouth -->
   <line x1="46" y1="54" x2="54" y2="54" stroke="#00ff41" stroke-width="2" />
-
-  <!-- Center dot -->
-  <circle cx="50" cy="50" r="2" fill="#ff2d2d" />
 </svg>
