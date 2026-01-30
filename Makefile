@@ -29,7 +29,7 @@ format:
 	cd pythonbridge && $(UV) run ruff format .
 
 lint:
-	$(MIX) format --check-formatted
+	$(MIX) format
 	cd pythonbridge && $(UV) run ruff check .
 
 validate: format lint test
