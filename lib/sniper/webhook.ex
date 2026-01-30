@@ -107,8 +107,9 @@ defmodule Sniper.Webhook do
         Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "@#{user} pong"}) end)
 
       "help" ->
+        user = payload["comment"]["user"]["login"]
         help = """
-        Here are the available commands:
+        @#{user} Here are the available commands:
 
         | Command | Description |
         | --- | --- |
