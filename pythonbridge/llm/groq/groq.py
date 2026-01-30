@@ -1,35 +1,41 @@
 from typing import Optional
 import groq
 from groq import Groq
-from pythonbridge import config
+from pythonbridge.core import config
 
 
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 
+# NOTE: No need to use AsyncGroq since a new, independent python process will be started by Elixir
 # GroqLLM ai initializes api key and takes any query in the review code function
 # Currently using the free plan for Groq
 class GroqLLM:
-    def __init__(self, curr_model: str = DEFAULT_MODEL) -> None:
+    def __init__(
+        self, curr_model: str = DEFAULT_MODEL, system_prompt: str = ""
+    ) -> None:
         self.client = Groq(api_key=config.GROQ_API_KEY)
         self.curr_model = curr_model
+        self.system_prompt = system_prompt
 
-    def review_code(self, code_block: str) -> Optional[str]:
-        """Reviews the provided code_block using the specified model"""
+    def invoke(self, message: str) -> Optional[str]:
+        """Sends a message to Groq endpoint and returns the received message
+
+        Args:
+            message (str): The message to be sent to Groq
+
+        Returns:
+            Optional[str]: Returns the Groq response or None if an error is encountered
+        """
         try:
             chat_completion = self.client.chat.completions.create(
                 messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a code reviewer. Analyze the code for bugs, security issues, and best practices.",
-                    },
-                    {
-                        "role": "user",
-                        "content": code_block,
-                    },
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": message},
                 ],
                 model=self.curr_model,
             )
+
             return chat_completion.choices[0].message.content
 
         except groq.APIConnectionError as e:

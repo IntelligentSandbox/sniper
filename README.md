@@ -1,6 +1,6 @@
 # Sniper
 
-Sniper is an AI-powered CLI tool that automates code review and bug detection.
+Sniper is an AI-powered GitHub App tool/bot that automates code review and bug detection.
 
 ## Prerequisites
 
@@ -66,8 +66,32 @@ Edit `.env` and set your `GROQ_API_KEY`.
 
 ## Usage
 
+### Running the Elixir webhook server
+
 ```bash
-mix run
-# OR
+# Keep the server running (recommended)
 make run
+
+# Or with an interactive Elixir shell (useful for development)
+iex -S mix
+```
+
+The webhook server will be available at `http://localhost:4000`.
+
+### Local Development with Webhooks
+
+For local development, use [smee](https://smee.io/) to forward GitHub webhooks to your local server:
+
+1. Create a channel at https://smee.io/
+2. Set the Smee URL as your GitHub App's webhook URL
+3. Run the smee client to forward requests:
+
+```bash
+smee -u https://smee.io/YOUR_CHANNEL_ID --path /webhook --port 4000
+```
+
+### Running the Python bridge (standalone)
+
+```bash
+make run-python
 ```

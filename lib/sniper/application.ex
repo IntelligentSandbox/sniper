@@ -8,16 +8,13 @@ defmodule Sniper.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Sniper.Worker.start_link(arg)
-      # {Sniper.Worker, arg}
-      {Sniper.PythonBridge, []}
+      {Sniper.PythonBridge, []},
+      {Plug.Cowboy, scheme: :http, plug: Sniper.Webhook, options: [port: 4000]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Sniper.Supervisor]
-    result = Supervisor.start_link(children, opts)
-
-    result
+    Supervisor.start_link(children, opts)
   end
 end

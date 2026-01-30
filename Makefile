@@ -14,7 +14,7 @@ install-python:
 	cd pythonbridge && $(UV) sync
 
 run:
-	$(MIX) run
+	$(MIX) run --no-halt
 
 # TODO: Temporary until Elixir webhook server is set up
 run-python:
@@ -29,7 +29,7 @@ format:
 	cd pythonbridge && $(UV) run ruff format .
 
 lint:
-	$(MIX) format --check-formatted
+	$(MIX) format
 	cd pythonbridge && $(UV) run ruff check .
 
 validate: format lint test

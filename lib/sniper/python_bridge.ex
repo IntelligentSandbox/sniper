@@ -16,14 +16,16 @@ defmodule Sniper.PythonBridge do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
+  # Called once when the GenServer starts. Spawns Python subprocess via Port.
   @impl true
   def init(_) do
     project_root = File.cwd!()
     pythonbridge_dir = Path.join([project_root, "pythonbridge"])
-    python_path = Path.join([pythonbridge_dir, "bridge.py"])
+    python_path = Path.join([pythonbridge_dir, "main.py"])
 
     case File.exists?(python_path) do
       true ->
+        # Port opens a pipe to external process (stdin/stdout communication)
         port =
           Port.open(
             {:spawn_executable, System.find_executable("sh")},
@@ -32,11 +34,12 @@ defmodule Sniper.PythonBridge do
               :exit_status,
               args: [
                 "-c",
-                "PYTHONPATH=#{project_root} uv run --directory #{pythonbridge_dir} python -m pythonbridge.bridge"
+                "PYTHONPATH=#{project_root} uv run --directory #{pythonbridge_dir} python -m pythonbridge.main"
               ]
             ]
           )
 
+        # State: port connection, pending callers by message ID, incomplete data buffer, ID counter
         {:ok, %{port: port, callers: %{}, buffer: "", id_counter: 0}}
 
       false ->
@@ -44,21 +47,22 @@ defmodule Sniper.PythonBridge do
     end
   end
 
+  # Called when GenServer.call/3 is invoked. Sends message to Python, stores caller for later reply.
   @impl true
   def handle_call({:send, message}, from, state) do
-    # Message IDs correlate async requests with responses
     message_id = state.id_counter + 1
     message_with_id = Map.put(message, "_id", message_id)
     json_message = Jason.encode!(message_with_id)
     Port.command(state.port, json_message <> "\n")
 
+    # {:noreply, ...} means we'll reply later via GenServer.reply/2 when Python responds
     {:noreply,
      %{state | callers: Map.put(state.callers, message_id, from), id_counter: message_id}}
   end
 
+  # Called when data arrives from Python. Buffers partial chunks until complete lines are received.
   @impl true
   def handle_info({_port, {:data, data}}, state) do
-    # Buffer handles partial data chunks from Port
     new_buffer = state.buffer <> data
 
     case split_lines(new_buffer) do
@@ -71,6 +75,7 @@ defmodule Sniper.PythonBridge do
     end
   end
 
+  # Called when Python process exits
   @impl true
   def handle_info({_port, {:exit_status, _status}}, state) do
     {:stop, :normal, state}
@@ -89,9 +94,10 @@ defmodule Sniper.PythonBridge do
   ## Examples
       Sniper.PythonBridge.send_message(%{type: "hello", count: 1})
   """
+  # Public API: sends message to Python and blocks until response (120s timeout)
   def send_message(message) do
     try do
-      GenServer.call(__MODULE__, {:send, message}, 5000)
+      GenServer.call(__MODULE__, {:send, message}, 120_000)
     catch
       :exit, {:noproc, _} ->
         {:error, "Python bridge not running"}
@@ -101,6 +107,7 @@ defmodule Sniper.PythonBridge do
     end
   end
 
+  # Splits buffered data into complete lines. Returns :incomplete if no newline found.
   defp split_lines(data) do
     case String.split(data, "\n") do
       lines when length(lines) == 1 -> :incomplete
@@ -108,14 +115,15 @@ defmodule Sniper.PythonBridge do
     end
   end
 
+  # Pattern match: skip empty lines
   defp process_response(line, state) when line == "", do: state
 
+  # Parse JSON response, match _id to waiting caller, send reply
   defp process_response(line, state) do
     case Jason.decode(line) do
       {:ok, response} ->
         case Map.get(response, "_id") do
           nil ->
-            # Log untagged responses for debugging
             Logger.debug("Received response without _id: #{inspect(response)}")
             state
 
@@ -126,6 +134,7 @@ defmodule Sniper.PythonBridge do
                 state
 
               from ->
+                # Found the caller - send them the response and remove from pending
                 callers = Map.delete(state.callers, id)
                 GenServer.reply(from, response)
                 %{state | callers: callers}
@@ -133,7 +142,7 @@ defmodule Sniper.PythonBridge do
         end
 
       {:error, reason} ->
-        Logger.error("Failed to decode JSON response: #{reason}, line: #{line}")
+        Logger.error("Failed to decode JSON response: #{inspect(reason)}, line: #{line}")
         state
     end
   end

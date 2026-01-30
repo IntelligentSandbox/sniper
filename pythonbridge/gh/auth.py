@@ -1,5 +1,5 @@
 from github import GithubIntegration
-from pythonbridge import config
+from pythonbridge.core import config
 
 
 def get_installation_token(installation_id: str) -> str:

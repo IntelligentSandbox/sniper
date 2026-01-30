@@ -23,6 +23,8 @@ defmodule Sniper.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
+      {:plug_cowboy, "~> 2.7"},
+      {:dotenvy, "~> 0.8"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
