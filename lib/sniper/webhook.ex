@@ -59,16 +59,12 @@ defmodule Sniper.Webhook do
   defp handle_webhook(conn, body) do
     case Jason.decode(body) do
       {:ok, payload} ->
+        event = get_github_event(conn)
         action = Map.get(payload, "action")
-        Logger.info("Webhook received: action=#{action}")
+        Logger.info("Webhook received: event=#{event} action=#{action}")
 
-        if action in ["opened", "synchronize", "reopened"] do
-          Logger.info("Processing PR review...")
-
-          Task.start(fn ->
-            result = Sniper.send_message(%{type: "main", payload: payload})
-            Logger.info("Review result: #{inspect(result)}")
-          end)
+        if event == "issue_comment" do
+          handle_issue_comment(payload, action)
         end
 
         send_resp(conn, 200, "ok")
@@ -78,4 +74,50 @@ defmodule Sniper.Webhook do
         send_resp(conn, 400, "invalid json")
     end
   end
+
+  defp get_github_event(conn) do
+    case Plug.Conn.get_req_header(conn, "x-github-event") do
+      [event] -> event
+      _ -> "unknown"
+    end
+  end
+
+  # TODO: Ignoring everything else for now like deleted or edited
+  defp handle_issue_comment(payload, "created") do
+    body = get_in(payload, ["comment", "body"]) || ""
+    is_pr = get_in(payload, ["issue", "pull_request"]) != nil
+    if not is_pr, do: :ok, else: dispatch_command(body, payload)
+  end
+
+  defp handle_issue_comment(_payload, _action), do: :ok
+
+  defp dispatch_command(body, payload) do
+    pr = %{
+      "number" => get_in(payload, ["issue", "number"]),
+      "repository" => payload["repository"],
+      "installation" => payload["installation"]
+    }
+
+    case parse_command(body) do
+      "review" ->
+        Task.start(fn -> Sniper.send_message(%{type: "main", payload: pr}) end)
+
+      "ping" ->
+        Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "pong"}) end)
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp parse_command(body) do
+    body
+    |> String.downcase()
+    |> String.split()
+    |> find_command()
+  end
+
+  defp find_command(["@snipercodeai", command | _]), do: command
+  defp find_command([_ | rest]), do: find_command(rest)
+  defp find_command([]), do: nil
 end
