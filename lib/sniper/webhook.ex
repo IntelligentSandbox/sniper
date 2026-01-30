@@ -86,7 +86,8 @@ defmodule Sniper.Webhook do
   defp handle_issue_comment(payload, "created") do
     body = get_in(payload, ["comment", "body"]) || ""
     is_pr = get_in(payload, ["issue", "pull_request"]) != nil
-    if not is_pr, do: :ok, else: dispatch_command(body, payload)
+    is_bot = get_in(payload, ["comment", "user", "type"]) == "Bot"
+    if not is_pr or is_bot, do: :ok, else: dispatch_command(body, payload)
   end
 
   defp handle_issue_comment(_payload, _action), do: :ok
