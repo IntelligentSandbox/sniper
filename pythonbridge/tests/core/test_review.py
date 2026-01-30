@@ -24,7 +24,7 @@ class TestReview(unittest.TestCase):
         mock_get_diff.return_value = [mock_file]
 
         mock_graph = Mock()
-        mock_graph.invoke.return_value = "Looks good, no issues found."
+        mock_graph.invoke.return_value = {"pr_review": "Looks good, no issues found."}
         mock_graph_builder.return_value.build_graph.return_value = mock_graph
 
         payload = {
