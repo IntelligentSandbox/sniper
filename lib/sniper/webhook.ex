@@ -103,7 +103,8 @@ defmodule Sniper.Webhook do
         Task.start(fn -> Sniper.send_message(%{type: "main", payload: pr}) end)
 
       "ping" ->
-        Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "pong"}) end)
+        user = payload["comment"]["user"]["login"]
+        Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "@#{user} pong"}) end)
 
       _ ->
         :ok
