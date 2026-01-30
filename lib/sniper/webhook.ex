@@ -106,6 +106,18 @@ defmodule Sniper.Webhook do
         user = payload["comment"]["user"]["login"]
         Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "@#{user} pong"}) end)
 
+      "help" ->
+        help = """
+        Here are the available commands:
+
+        | Command | Description |
+        | --- | --- |
+        | `@snipercodeai review` | Run an AI code review on this PR |
+        | `@snipercodeai ping` | Check if the bot is alive |
+        | `@snipercodeai help` | Show this message |
+        """
+        Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: help}) end)
+
       _ ->
         :ok
     end
