@@ -15,6 +15,7 @@ from typing import Optional, Any
 from pydantic import BaseModel
 
 from pythonbridge.core.review import review_pr
+from pythonbridge.gh.client import post_comment
 
 
 class BridgeResponse(BaseModel):
@@ -44,6 +45,18 @@ def handle_msg(msg: dict) -> BridgeResponse:
         count = msg.get("count", 0)
         return BridgeResponse(status="ok", response=f"hello from python {count}")
 
+    elif type == "comment":
+        payload = msg.get("payload")
+        body = msg.get("body")
+        if not payload or not body:
+            return BridgeResponse(status="error", error="Missing payload or body")
+        try:
+            post_comment(payload, body)
+            return BridgeResponse(status="ok", response="comment posted")
+        except Exception as e:
+            return BridgeResponse(status="error", error=str(e))
+
+    # TODO: This boiler plate needs refactoring
     elif type == "main":
         payload = msg.get("payload")
         if not payload:

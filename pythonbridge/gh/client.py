@@ -56,3 +56,22 @@ def post_review(payload: dict, reviews: list[dict]) -> None:
 
     if body:
         pr.create_issue_comment(body)
+
+
+def post_comment(payload: dict, body: str) -> None:
+    """Post a comment on a pull request.
+
+    Args:
+        payload: GitHub webhook payload containing PR details.
+            Expected keys: "number", "repository.full_name", "installation.id"
+        body: The comment body to post.
+    """
+    pr_number = payload.get("number")
+    repo_full_name = payload.get("repository").get("full_name")
+    installation_id = payload.get("installation").get("id")
+    installation_token = get_installation_token(installation_id)
+
+    github_client = Github(installation_token)
+    repo = github_client.get_repo(repo_full_name)
+    pr = repo.get_pull(pr_number)
+    pr.create_issue_comment(body)
