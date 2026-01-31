@@ -7,17 +7,20 @@ Sniper is an AI-powered GitHub App tool/bot that automates code review and bug d
 - Elixir 1.14+
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
+- [Docker](https://docs.docker.com/get-docker/) (for Neo4j)
 
 ## Installation
 
 ### 1. Install Elixir
 
 **macOS (Homebrew):**
+
 ```bash
 brew install elixir
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install elixir
 ```
@@ -27,18 +30,28 @@ sudo apt-get install elixir
 ### 2. Install uv (Python package manager)
 
 **macOS/Linux:**
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 **Homebrew:**
+
 ```bash
 brew install uv
 ```
 
 **Other platforms:** See the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
-### 3. Install project dependencies
+### 3. Start Neo4j
+
+```bash
+docker compose up -d
+```
+
+This starts Neo4j on `bolt://localhost:7687` with the browser UI at `http://localhost:7474`. Default credentials are `neo4j/sniper_dev` (configurable via `NEO4J_AUTH` in `.env`).
+
+### 4. Install project dependencies
 
 ```bash
 # Install Elixir dependencies
@@ -50,11 +63,12 @@ uv sync
 ```
 
 Or use the Makefile:
+
 ```bash
 make install
 ```
 
-### 4. Configure environment variables
+### 5. Configure environment variables
 
 Copy the example environment file and add your API key:
 
