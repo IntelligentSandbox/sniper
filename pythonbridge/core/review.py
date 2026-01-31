@@ -1,11 +1,13 @@
 from pythonbridge.core.config import load_environment
-from pythonbridge.gh.client import get_diff, post_review
+from pythonbridge.gh.client import get_diff, post_review, create_reaction
 from pythonbridge.llm import GraphBuilder
 
 
 # TODO: Add context input to this function and refactor if needed
 def review_pr(payload: dict) -> list[dict]:
     load_environment()
+
+    create_reaction(payload)
 
     files = get_diff(payload)
     graph_builder = GraphBuilder()

@@ -4,6 +4,26 @@ from github import Github, PaginatedList, File
 from pythonbridge.gh.auth import get_installation_token
 
 
+def create_reaction(payload: dict, reaction_type: str = "eyes") -> None:
+    """Add a reaction to the triggering comment.
+
+    Args:
+        payload: GitHub webhook payload containing PR details.
+            Expected keys: "comment_id", "repository.full_name", "installation.id"
+        reaction_type: The reaction to add (default "eyes").
+    """
+    repo_full_name = payload.get("repository").get("full_name")
+    installation_id = payload.get("installation").get("id")
+    comment_id = payload.get("comment_id")
+    installation_token = get_installation_token(installation_id)
+
+    pr_number = payload.get("number")
+    github_client = Github(installation_token)
+    repo = github_client.get_repo(repo_full_name)
+    comment = repo.get_issue(pr_number).get_comment(comment_id)
+    comment.create_reaction(reaction_type)
+
+
 def get_diff(payload: dict) -> PaginatedList[File]:
     """Get the changed files from a pull request.
 

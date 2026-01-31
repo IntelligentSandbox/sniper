@@ -96,7 +96,8 @@ defmodule Sniper.Webhook do
     pr = %{
       "number" => get_in(payload, ["issue", "number"]),
       "repository" => payload["repository"],
-      "installation" => payload["installation"]
+      "installation" => payload["installation"],
+      "comment_id" => get_in(payload, ["comment", "id"])
     }
 
     case parse_command(body) do
