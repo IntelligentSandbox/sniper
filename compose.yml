@@ -1,0 +1,15 @@
+# https://neo4j.com/docs/operations-manual/current/docker/introduction/
+services:
+  neo4j:
+    image: neo4j:2025.12.1
+    restart: always
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH:-neo4j/sniper_dev}
+    volumes:
+      - neo4j_data:/data
+
+volumes:
+  neo4j_data:
