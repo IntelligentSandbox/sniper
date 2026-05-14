@@ -31,6 +31,7 @@ Carefully inspect the changes for:
 Respond with a JSON array of review comments. Each object must have:
 
 - `"line"`: integer, the line number in the new version of the file where the issue is
+- `"severity"`: one of `"critical"`, `"high"`, `"medium"`, `"low"`
 - `"body"`: string, the review comment in markdown including explanation and suggested fix
 
 If no issues are found, return an empty array: `[]`
@@ -40,10 +41,12 @@ Example:
 [
   {
     "line": 12,
+    "severity": "high",
     "body": "**Bug:** `get_user` can return `None` here but is used without a null check on line 14. Add a guard: `if user is None: raise ValueError(...)`"
   },
   {
     "line": 28,
+    "severity": "low",
     "body": "**Style:** Variable name `x` is not descriptive. Consider renaming to `retry_count`."
   }
 ]

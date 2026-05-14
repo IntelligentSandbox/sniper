@@ -64,8 +64,7 @@ def post_review(payload: dict, comments: list[dict], head_sha: str) -> None:
         commit=commit,
         event="COMMENT",
         comments=[
-            {"path": c["path"], "line": c["line"], "body": c["body"]}
-            for c in comments
+            {"path": c["path"], "line": c["line"], "body": c["body"]} for c in comments
         ],
     )
 
