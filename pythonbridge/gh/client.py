@@ -42,6 +42,20 @@ def get_pr(payload: dict) -> tuple:
     return pr.get_files(), pr.title, pr.body or "", pr.head.sha
 
 
+def get_file_log(payload: dict, filename: str, limit: int = 5) -> list[dict]:
+    """Get recent commit history for a file."""
+    repo = _get_repo(payload)
+    commits = repo.get_commits(path=filename)
+    return [
+        {
+            "sha": c.sha[:7],
+            "message": c.commit.message.splitlines()[0],
+            "author": c.commit.author.name,
+        }
+        for c in list(commits[:limit])
+    ]
+
+
 def post_review(payload: dict, comments: list[dict], head_sha: str) -> None:
     """Post inline review comments to a pull request.
 
