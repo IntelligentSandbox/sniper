@@ -13,12 +13,12 @@ import json
 import logging
 from typing import Optional, Any
 
-logging.basicConfig(filename="sniper.log", level=logging.INFO)
-
 from pydantic import BaseModel
 
 from pythonbridge.core.review import review_pr
 from pythonbridge.gh.client import post_comment
+
+logging.basicConfig(filename="sniper.log", level=logging.INFO)
 
 
 class BridgeResponse(BaseModel):
