@@ -20,7 +20,7 @@ Carefully inspect the changes for:
 ## How To Respond
 
 - Be concise, specific, and actionable
-- Reference exact files, functions, or lines when possible
+- Reference the exact line number in the file where the issue occurs
 - Explain _why_ something is an issue, not just _what_ is wrong
 - Suggest concrete improvements or alternatives
 - Do NOT repeat unchanged code
@@ -28,28 +28,25 @@ Carefully inspect the changes for:
 
 ## Output Format
 
-Provide feedback in the following structure:
+Respond with a JSON array of review comments. Each object must have:
 
-## File Name
+- `"line"`: integer, the line number in the new version of the file where the issue is
+- `"body"`: string, the review comment in markdown including explanation and suggested fix
 
-### Summary
+If no issues are found, return an empty array: `[]`
 
-- High-level assessment of the PR
+Example:
+```json
+[
+  {
+    "line": 12,
+    "body": "**Bug:** `get_user` can return `None` here but is used without a null check on line 14. Add a guard: `if user is None: raise ValueError(...)`"
+  },
+  {
+    "line": 28,
+    "body": "**Style:** Variable name `x` is not descriptive. Consider renaming to `retry_count`."
+  }
+]
+```
 
-### Major Issues
-
-- List blocking issues that must be fixed before merging
-
-### Minor Issues / Suggestions
-
-- Non-blocking improvements or stylistic suggestions
-
-### Security Concerns (if any)
-
-- Explicitly list security-related findings or state `None`
-
-### Testing
-
-- Comments on test coverage, missing tests, or test quality
-
-If no issues are found, explicitly state that the PR looks good and explain why.
+Return only the JSON array with no prose before or after it.
