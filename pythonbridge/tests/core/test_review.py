@@ -14,7 +14,12 @@ class TestReview(unittest.TestCase):
     @patch("pythonbridge.core.review.GraphBuilder")
     @patch("pythonbridge.core.review.post_review")
     def test_review_pr_reviews_files(
-        self, mock_post_review, mock_graph_builder, mock_get_diff, mock_create_reaction, mock_load_env
+        self,
+        mock_post_review,
+        mock_graph_builder,
+        mock_get_diff,
+        mock_create_reaction,
+        mock_load_env,
     ):
         # https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files
         mock_file = Mock()
@@ -52,7 +57,12 @@ class TestReview(unittest.TestCase):
     @patch("pythonbridge.core.review.GraphBuilder")
     @patch("pythonbridge.core.review.post_review")
     def test_review_pr_skips_files_without_patch(
-        self, mock_post_review, mock_graph_builder, mock_get_diff, mock_create_reaction, mock_load_env
+        self,
+        mock_post_review,
+        mock_graph_builder,
+        mock_get_diff,
+        mock_create_reaction,
+        mock_load_env,
     ):
         # Deleted files have no patch (no diff to review)
         mock_file = Mock()

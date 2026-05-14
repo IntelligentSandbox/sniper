@@ -106,10 +106,14 @@ defmodule Sniper.Webhook do
 
       "ping" ->
         user = payload["comment"]["user"]["login"]
-        Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: "@#{user} pong"}) end)
+
+        Task.start(fn ->
+          Sniper.send_message(%{type: "comment", payload: pr, body: "@#{user} pong"})
+        end)
 
       "help" ->
         user = payload["comment"]["user"]["login"]
+
         help = """
         @#{user} Here are the available commands:
 
@@ -119,6 +123,7 @@ defmodule Sniper.Webhook do
         | `@snipercodeai ping` | Check if the bot is alive |
         | `@snipercodeai help` | Show this message |
         """
+
         Task.start(fn -> Sniper.send_message(%{type: "comment", payload: pr, body: help}) end)
 
       _ ->

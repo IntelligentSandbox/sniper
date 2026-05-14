@@ -9,7 +9,7 @@ import os
 # parser = Parser(PY_LANGUAGE)
 
 
-class AST_manager:
+class ASTManager:
     """
     Manages Abstract Syntax Tree (AST) parsing and relationship extraction for Python files.
 
@@ -209,7 +209,8 @@ class AST_manager:
             # every class found in a file
             for i, class_name_node in enumerate(captures["class.def"]):
                 class_name = class_name_node.text.decode("utf8")
-                class_body = captures["class.block"][i]
+                class_def_node = class_name_node.parent
+                class_body = class_def_node.child_by_field_name("body")
 
                 # search through all the nodes within the class body
                 for node in self.traverse_tree(class_body):
@@ -237,7 +238,8 @@ class AST_manager:
                 if self.check_parent_is_class(func_name_node):
                     continue
                 func_name = func_name_node.text.decode("utf8")
-                func_body = captures["function.block"][i]
+                func_def_node = func_name_node.parent
+                func_body = func_def_node.child_by_field_name("body")
                 # loop through the function body and search for function calls
                 for node in self.traverse_tree(func_body):
                     # call nodes represent any function calls
