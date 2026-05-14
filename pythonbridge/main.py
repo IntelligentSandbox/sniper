@@ -10,7 +10,10 @@ No multiple Python processes.
 
 import sys
 import json
+import logging
 from typing import Optional, Any
+
+logging.basicConfig(filename="sniper.log", level=logging.INFO)
 
 from pydantic import BaseModel
 

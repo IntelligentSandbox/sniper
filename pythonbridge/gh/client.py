@@ -1,7 +1,11 @@
 from __future__ import annotations  # issues with type hints
 
+import logging
+
 from github import Github, Repository
 from pythonbridge.gh.auth import get_installation_token
+
+logger = logging.getLogger(__name__)
 
 
 def create_reaction(payload: dict, reaction_type: str = "eyes") -> None:
@@ -44,16 +48,15 @@ def get_pr(payload: dict) -> tuple:
 
 def get_file_log(payload: dict, filename: str, limit: int = 5) -> list[dict]:
     """Get recent commit history for a file."""
-    repo = _get_repo(payload)
-    commits = repo.get_commits(path=filename)
-    return [
-        {
-            "sha": c.sha[:7],
-            "message": c.commit.message.splitlines()[0],
-            "author": c.commit.author.name,
-        }
-        for c in list(commits[:limit])
-    ]
+    try:
+        commits = _get_repo(payload).get_commits(path=filename)
+        return [
+            {"sha": c.sha[:7], "message": c.commit.message.splitlines()[0], "author": c.commit.author.name}
+            for _, c in zip(range(limit), commits)
+        ]
+    except Exception as e:
+        logger.warning("Failed to get file log for %s: %s", filename, e)
+        return []
 
 
 def post_review(payload: dict, comments: list[dict], head_sha: str) -> None:

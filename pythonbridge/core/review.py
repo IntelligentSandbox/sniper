@@ -77,9 +77,13 @@ def review_pr(payload: dict) -> list[dict]:
             continue
 
         # Annotate the diff with real line numbers so the LLM can reference them accurately
+        logger.info("Reviewing file: %s", file.filename)
         annotated_patch, valid_lines = parse_patch(file.patch)
         language = _detect_language(file.filename)
+        logger.info("Detected language: %s", language)
+        logger.info("Fetching git log for: %s", file.filename)
         file_log = get_file_log(payload, file.filename)
+        logger.info("Got %d commits, invoking LLM", len(file_log))
         log_str = "\n".join(f"  {c['sha']} {c['author']}: {c['message']}" for c in file_log)
         llm_input = f"Language: {language}\nFile: {file.filename}\nRecent commits:\n{log_str}\n\n{annotated_patch}"
 
