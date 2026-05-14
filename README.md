@@ -13,35 +13,11 @@ Sniper is an AI-powered GitHub App tool/bot that automates code review and bug d
 
 ### 1. Install Elixir
 
-**macOS (Homebrew):**
+See the [official installation guide](https://elixir-lang.org/install.html).
 
-```bash
-brew install elixir
-```
+### 2. Install uv
 
-**Ubuntu/Debian:**
-
-```bash
-sudo apt-get install elixir
-```
-
-**Other platforms:** See the [official Elixir installation guide](https://elixir-lang.org/install.html).
-
-### 2. Install uv (Python package manager)
-
-**macOS/Linux:**
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-**Homebrew:**
-
-```bash
-brew install uv
-```
-
-**Other platforms:** See the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+See the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 ### 3. Start Neo4j
 
