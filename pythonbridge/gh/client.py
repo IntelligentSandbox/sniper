@@ -24,15 +24,15 @@ def create_reaction(payload: dict, reaction_type: str = "eyes") -> None:
     comment.create_reaction(reaction_type)
 
 
-def get_diff(payload: dict) -> PaginatedList[File]:
-    """Get the changed files from a pull request.
+def get_pr(payload: dict) -> tuple:
+    """Get PR metadata and changed files.
 
     Args:
         payload: GitHub webhook payload containing PR details.
             Expected keys: "number", "repository.full_name", "installation.id"
 
     Returns:
-        PaginatedList of File objects representing changed files in the PR.
+        Tuple of (files, title, body, head_sha).
     """
     # Get installation token
     pr_number = payload.get("number")
@@ -40,25 +40,22 @@ def get_diff(payload: dict) -> PaginatedList[File]:
     installation_id = payload.get("installation").get("id")
     installation_token = get_installation_token(installation_id)
 
-    # Create Github client and get changed files from PR
+    # Create Github client and get PR metadata + changed files
     github_client = Github(installation_token)
     repo = github_client.get_repo(repo_full_name)
     pr = repo.get_pull(pr_number)
-    files = pr.get_files()
 
-    return files
+    return pr.get_files(), pr.title, pr.body or "", pr.head.sha
 
 
-def post_review(payload: dict, reviews: list[dict]) -> None:
-    """Post code review comments to a pull request.
-
-    Formats review comments and posts them as a single issue comment on the PR.
-    Only includes files that have non-empty review content.
+def post_review(payload: dict, comments: list[dict], head_sha: str) -> None:
+    """Post inline review comments to a pull request.
 
     Args:
         payload: GitHub webhook payload containing PR details.
             Expected keys: "number", "repository.full_name", "installation.id"
-        reviews: List of review dicts with keys "filename" and "review".
+        comments: List of dicts with keys "path", "line", and "body".
+        head_sha: The commit SHA to attach the review to.
     """
     pr_number = payload.get("number")
     repo_full_name = payload.get("repository").get("full_name")
@@ -68,14 +65,20 @@ def post_review(payload: dict, reviews: list[dict]) -> None:
     github_client = Github(installation_token)
     repo = github_client.get_repo(repo_full_name)
     pr = repo.get_pull(pr_number)
+    commit = repo.get_commit(head_sha)
 
-    body = ""
-    for r in reviews:
-        if r["review"]:
-            body += f"**{r['filename']}**\n{r['review']}\n\n"
+    if not comments:
+        pr.create_issue_comment("No issues found in this PR.")
+        return
 
-    if body:
-        pr.create_issue_comment(body)
+    pr.create_review(
+        commit=commit,
+        event="COMMENT",
+        comments=[
+            {"path": c["path"], "line": c["line"], "body": c["body"]}
+            for c in comments
+        ],
+    )
 
 
 def post_comment(payload: dict, body: str) -> None:
