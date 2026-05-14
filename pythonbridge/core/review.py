@@ -9,6 +9,18 @@ from pythonbridge.llm import GraphBuilder
 logger = logging.getLogger(__name__)
 
 
+_SEVERITY_EMOJI = {
+    "critical": "🔴 **[CRITICAL]**",
+    "high": "🟠 **[HIGH]**",
+    "medium": "🟡 **[MEDIUM]**",
+    "low": "🔵 **[LOW]**",
+}
+
+
+def _severity_emoji(severity: str) -> str:
+    return _SEVERITY_EMOJI.get(severity.lower(), "")
+
+
 def _build_pr_context(title: str, body: str) -> str:
     return f"\n\n## PR Context\n\n**Title:** {title}\n\n**Description:**\n{body or '_No description provided._'}\n"
 
@@ -24,7 +36,11 @@ def _parse_comments(raw: str, filename: str) -> list[dict]:
         if not isinstance(comments, list):
             return []
         return [
-            {"path": filename, "line": c["line"], "body": c["body"]}
+            {
+                "path": filename,
+                "line": c["line"],
+                "body": f"{_severity_emoji(c['severity'])} {c['body']}" if c.get("severity") else c["body"],
+            }
             for c in comments
             if isinstance(c.get("line"), int) and c.get("body")
         ]

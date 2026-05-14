@@ -30,7 +30,9 @@ class TestReview(unittest.TestCase):
         mock_get_pr.return_value = ([mock_file], "Test PR", "A description", "abc123")
 
         mock_graph = Mock()
-        mock_graph.invoke.return_value = {"pr_review": '[{"line": 1, "body": "Looks good."}]'}
+        mock_graph.invoke.return_value = {
+            "pr_review": '[{"line": 1, "body": "Looks good."}]'
+        }
         mock_graph_builder.return_value.build_graph.return_value = mock_graph
 
         payload = {

@@ -335,9 +335,7 @@ def create_objects():
             relationships = self.manager.get_relationships()
 
             for import_rel in relationships["imports"]:
-                self.assertEqual(
-                    import_rel["caller"], os.path.basename(tmp_file_path)
-                )
+                self.assertEqual(import_rel["caller"], os.path.basename(tmp_file_path))
         finally:
             os.unlink(tmp_file_path)
 
