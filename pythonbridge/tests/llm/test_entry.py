@@ -7,14 +7,18 @@ from pythonbridge.llm.entry import GraphBuilder
 
 
 class TestGraphBuilder(unittest.TestCase):
-    def test_build_graph_returns_compiled_graph(self):
+    @patch("pythonbridge.llm.agents.reviewer.GroqLLM")
+    @patch("pythonbridge.llm.agents.validator.GroqLLM")
+    def test_build_graph_returns_compiled_graph(self, _mock_val_llm, _mock_rev_llm):
         """Test that build_graph returns a CompiledStateGraph"""
         builder = GraphBuilder()
         graph = builder.build_graph()
 
         self.assertIsInstance(graph, CompiledStateGraph)
 
-    def test_build_graph_with_context(self):
+    @patch("pythonbridge.llm.agents.reviewer.GroqLLM")
+    @patch("pythonbridge.llm.agents.validator.GroqLLM")
+    def test_build_graph_with_context(self, _mock_val_llm, _mock_rev_llm):
         """Test that build_graph accepts context parameters"""
         builder = GraphBuilder()
         graph = builder.build_graph(
