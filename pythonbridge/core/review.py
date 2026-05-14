@@ -1,6 +1,9 @@
 import json
 import logging
 
+from pygments.lexers import get_lexer_for_filename
+from pygments.util import ClassNotFound
+
 from pythonbridge.core.config import load_environment
 from pythonbridge.core.diff_parser import parse_patch, clamp_to_valid
 from pythonbridge.gh.client import get_pr, post_review, create_reaction
@@ -19,6 +22,13 @@ _SEVERITY_EMOJI = {
 
 def _severity_emoji(severity: str) -> str:
     return _SEVERITY_EMOJI.get(severity.lower(), "")
+
+
+def _detect_language(filename: str) -> str:
+    try:
+        return get_lexer_for_filename(filename).name
+    except ClassNotFound:
+        return "Unknown"
 
 
 def _build_pr_context(title: str, body: str) -> str:
@@ -68,8 +78,10 @@ def review_pr(payload: dict) -> list[dict]:
 
         # Annotate the diff with real line numbers so the LLM can reference them accurately
         annotated_patch, valid_lines = parse_patch(file.patch)
+        language = _detect_language(file.filename)
+        llm_input = f"Language: {language}\nFile: {file.filename}\n\n{annotated_patch}"
 
-        result = agent_graph.invoke({"pr_input": annotated_patch})
+        result = agent_graph.invoke({"pr_input": llm_input})
         raw_review = result.get("pr_review") if result else None
         comments = _parse_comments(raw_review, file.filename) if raw_review else []
 
