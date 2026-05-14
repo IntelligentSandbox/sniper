@@ -6,7 +6,7 @@ from pygments.util import ClassNotFound
 
 from pythonbridge.core.config import load_environment
 from pythonbridge.core.diff_parser import parse_patch, clamp_to_valid
-from pythonbridge.gh.client import get_pr, post_review, create_reaction
+from pythonbridge.gh.client import get_pr, get_file_log, post_review, create_reaction
 from pythonbridge.llm import GraphBuilder
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,9 @@ def review_pr(payload: dict) -> list[dict]:
         # Annotate the diff with real line numbers so the LLM can reference them accurately
         annotated_patch, valid_lines = parse_patch(file.patch)
         language = _detect_language(file.filename)
-        llm_input = f"Language: {language}\nFile: {file.filename}\n\n{annotated_patch}"
+        file_log = get_file_log(payload, file.filename)
+        log_str = "\n".join(f"  {c['sha']} {c['author']}: {c['message']}" for c in file_log)
+        llm_input = f"Language: {language}\nFile: {file.filename}\nRecent commits:\n{log_str}\n\n{annotated_patch}"
 
         result = agent_graph.invoke({"pr_input": llm_input})
         raw_review = result.get("pr_review") if result else None
