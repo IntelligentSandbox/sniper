@@ -26,7 +26,13 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install dependencies
-        run: make install
+        run: |
+          mix deps.get
+          cd pythonbridge
+          uv sync
 
       - name: Run lint
-        run: make lint
+        run: |
+          mix format
+          cd pythonbridge
+          uv run ruff check .
