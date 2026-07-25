@@ -4,7 +4,7 @@ from groq import Groq
 from pythonbridge.core import config
 
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 
 # NOTE: No need to use AsyncGroq since a new, independent python process will be started by Elixir
